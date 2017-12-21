@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jms="http://www.springframework.org/schema/jms" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans   
+     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd   
+     http://www.springframework.org/schema/context   
+     http://www.springframework.org/schema/context/spring-context-3.0.xsd   
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd   
+    http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms-3.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+	<import resource="classpath*:applicationContext-ibmmq.xml" />
+	<!--这个是队列目的地BSTASA_1 接受队列 BSTASA_1 -->
+	<bean id="adapterQueue" class="com.ibm.mq.jms.MQQueue">
+		<constructor-arg>
+			<value>BSTASA_1</value>
+		</constructor-arg>
+	</bean>
+	<!--这个是队列目的地 XMSGTOPFGG_A1 发送队列 -->
+	<bean id="sendQueue" class="com.ibm.mq.jms.MQQueue">
+		<constructor-arg>
+			<value>XMSGTOPFGG_A1</value>
+		</constructor-arg>
+	</bean>
+	<bean name="springContextUtil" class="com.spdb.ib.dpib.common.SpringContextUtil"
+		scope="singleton" lazy-init="false"></bean>
+	<bean id="mqServer" class="com.spdb.ib.dpib.server.imp.MQServerImp"
+		scope="singleton" lazy-init="false" destroy-method="stopServer">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="destination" ref="adapterQueue" />
+		<property name="cacheLevelName" value="CACHE_CONSUMER" />
+		<property name="messageListener" ref="mqServerReceiveListener" />
+		<property name="taskExecutor" ref="mqTaskExecutor" />
+		<property name="concurrentConsumers" value="10" />
+		<!-- 最大线程大小 -->
+		<property name="maxConcurrentConsumers" value="200" />
+		<property name="sessionTransacted" value="true" />
+		<property name="transactionManager" ref="jmsTransactionManager" />
+	</bean>    
+	<!-- 根据消息返回交易码  -->
+	<bean id="msgDecoder" class="com.spdb.dpib.mq.test.MsgDecoderImpl">
+	</bean>
+	<!-- mq交易工厂类实现 -->
+	<bean id="mqServerTranFactory" class="com.spdb.ib.dpib.factory.MQServerTranFactoryImp"
+		scope="singleton">
+		<property name="mqTranMap">
+			<map>
+				<entry key="8888" value="mqBaseSingleTran8888"></entry>
+			</map>
+		</property>
+		<property name="msgDecoder" ref="msgDecoder"></property>
+	</bean>
+   <!--交易码为888的逻辑实现类  -->
+	<bean id="mqBaseSingleTran8888" class="com.spdb.dpib.mq.test.MQBaseSingleTran8888"
+		scope="prototype">
+		<!-- 消息队列池,按照不同的优先级分为不同的消息队列 -->
+		<property name="queuePool" ref="queuePool"></property>
+		<!-- 线程池锁 -->
+		<property name="lock" ref="lock">
+		</property>
+	</bean>
+	<bean id="linkedBlockingTranQueueExample" class="com.spdb.ib.dpib.core.queue.imp.LinkedBlockingTranQueue"
+		scope="singleton" init-method="init">
+		<property name="capacity" value="10"></property>
+	</bean>
+	<bean id="queuePool" class="com.spdb.ib.dpib.core.queue.imp.QueuePool"
+		scope="singleton" init-method="init">
+		<property name="queueList">
+			<list>
+				<ref bean="linkedBlockingTranQueueExample" />
+			</list>
+		</property>
+	</bean>
+	<bean id="lock" class="com.spdb.ib.dpib.core.utils.ObjectLock"
+		scope="prototype">
+	</bean>
+</beans>  

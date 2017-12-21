@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+	<bean id="dataSource1" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"></property>
+		<property name="url" value="jdbc:oracle:thin:@10.112.11.137:1521:dpibdb"></property>
+		<property name="username" value="dpib"></property>
+		<property name="password" value="dpib1234"></property>
+		<property name="maxActive" value="100"></property>
+		<property name="maxIdle" value="30"></property>
+		<property name="maxWait" value="500"></property>
+		<property name="defaultAutoCommit" value="true"></property>
+	</bean>
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource1" />
+		<property name="configLocation" value="classpath:mybatis-config.xml" />
+		<property name="mapperLocations" value="classpath*:database/*.mybatis.xml" />
+	</bean>
+
+	<import resource="classpath:applicationContext-seq.xml" />
+
+	<!-- 一期 -->
+	<bean id="sOPService3691" class="com.spdb.ib.dpib.services.imp.SOPServiceImp3691"></bean>
+	<bean id="sOPService7702" class="com.spdb.ib.dpib.services.imp.SOPServiceImp7702"></bean>
+	<bean id="sOPService7704" class="com.spdb.ib.dpib.services.imp.SOPServiceImp7704"></bean>
+	<bean id="sOPService7720" class="com.spdb.ib.dpib.services.imp.SOPServiceImp7720"></bean>
+	<bean id="sOPServiceDS81" class="com.spdb.ib.dpib.services.imp.SOPServiceImpDS81"></bean>
+	<bean id="sOPServiceE452" class="com.spdb.ib.dpib.services.imp.SOPServiceImpE452"></bean>
+	<bean id="sOPServiceE021" class="com.spdb.ib.dpib.services.imp.SOPServiceImpE021"></bean>
+
+	<!-- 二期 -->
+	<bean id="sOPServiceDS83" class="com.spdb.ib.dpib.services.imp.SOPServiceImpDS83"></bean>
+	<bean id="sOPService5625" class="com.spdb.ib.dpib.services.imp.SOPServiceImp5625"></bean>
+	<bean id="sOPService5767" class="com.spdb.ib.dpib.services.imp.SOPServiceImp5767"></bean>
+	<bean id="sOPServiceDS90" class="com.spdb.ib.dpib.services.imp.SOPServiceImpDS90"></bean>
+	<bean id="sOPServiceDS91" class="com.spdb.ib.dpib.services.imp.SOPServiceImpDS91"></bean>
+	<bean id="sOPService5630" class="com.spdb.ib.dpib.services.imp.SOPServiceImp5630"></bean>
+	<bean id="sOPService9381" class="com.spdb.ib.dpib.services.imp.SOPServiceImp9381"></bean>
+	<bean id="sOPService9303" class="com.spdb.ib.dpib.services.imp.SOPServiceImp9303"></bean>
+	<bean id="sOPService3845" class="com.spdb.ib.dpib.services.imp.SOPServiceImp3845"></bean>
+	<bean id="sOPService5009" class="com.spdb.ib.dpib.services.imp.SOPServiceImp5009"></bean>
+	<bean id="sOPServiceDS80" class="com.spdb.ib.dpib.services.imp.SOPServiceImpDS80"></bean>
+	<bean id="sOPServiceDS92" class="com.spdb.ib.dpib.services.imp.SOPServiceImpDS92"></bean>
+	<bean id="sOPServiceDS93" class="com.spdb.ib.dpib.services.imp.SOPServiceImpDS93"></bean>
+	<bean id="sOPServiceDS19" class="com.spdb.ib.dpib.services.imp.SOPServiceImpDS19"></bean>
+	<bean id="sOPServiceDS82" class="com.spdb.ib.dpib.services.imp.SOPServiceImpDS82"></bean>
+	<bean id="sOPServiceED03" class="com.spdb.ib.dpib.services.imp.SOPServiceImpED03"></bean>
+	<bean id="sOPServiceE926" class="com.spdb.ib.dpib.services.imp.SOPServiceImpE926"></bean>
+	<bean id="sOPService5766" class="com.spdb.ib.dpib.services.imp.SOPServiceImp5766"></bean>
+	<bean id="sOPServiceEL22" class="com.spdb.ib.dpib.services.imp.SOPServiceImpEL22"></bean>
+	<bean id="sOPService9228" class="com.spdb.ib.dpib.services.imp.SOPServiceImp9228"></bean>
+	<bean id="sOPService9328" class="com.spdb.ib.dpib.services.imp.SOPServiceImp9328"></bean>
+
+	<bean id="sOPService7708" class="com.spdb.ib.dpib.services.imp.SOPServiceImp7708"></bean>
+
+	<bean id="logAspectServiceImp" class="com.spdb.ib.dpib.aspect.LogAspectServiceImp">
+		<constructor-arg type="java.lang.String" value="cop" />
+		<property name="seqGeneratorService">
+			<ref bean="seqGeneratorService" />
+		</property>
+	</bean>
+
+<!-- 	<aop:config>
+		<aop:aspect id="logAspectService" ref="logAspectServiceImp">
+			<aop:pointcut id="logPointCutServiceImp"
+				expression="execution(* com.spdb.ib.dpib.services..*.* (..)) and args(Object)" />
+			第一个*代表所有的返回值类型 第一个..代表所有的子目录 第二个*代表所有的类 第三个*代表类所有方法 最后一个..代表所有的参数。
+			<aop:before pointcut-ref="logPointCutServiceImp"
+				arg-names="Object" method="beforAdvice" />
+			<aop:after-returning pointcut-ref="logPointCutServiceImp"
+				method="afterReturningAdvice" returning="outDto" />
+			<aop:after pointcut-ref="logPointCutServiceImp" method="afterAdvice" />
+		</aop:aspect>
+	</aop:config>
+ -->
+
+
+	<!-- Map進、出 -->
+	<bean id="testLogAspect" class="com.spdb.ib.dpib.aspect.TestLogAspect">
+		<constructor-arg type="java.lang.String" value="cop" />
+	</bean>
+
+<!-- 	<aop:config>
+		<aop:aspect id="testAspect1" ref="testLogAspect">
+			<aop:pointcut id="testlogAspectImp"
+				expression="execution(* com.spdb.ib.dpib.services..*.* (..)) and args(Object)" />
+			<aop:before pointcut-ref="testlogAspectImp" arg-names="Object"
+				method="beforAdvice" />
+			<aop:after-returning pointcut-ref="testlogAspectImp"
+				method="afterReturningAdvice" returning="outMap" />
+			<aop:after pointcut-ref="testlogAspectImp" method="afterAdvice" />
+		</aop:aspect>
+	</aop:config> -->
+
+	<bean id="sOPFreemarkerService" class="com.spdb.ib.dpib.services.imp.SOPFreemarkerServiceImp">
+		<property name="sourcePath">
+			<value>/src/main/java/</value>
+		</property>
+	</bean>
+
+	<bean id="testAspect" class="com.spdb.ib.dpib.services.imp.TestAspect"></bean>
+</beans>

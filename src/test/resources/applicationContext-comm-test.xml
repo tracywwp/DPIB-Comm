@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jms="http://www.springframework.org/schema/jms" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans   
+     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd   
+     http://www.springframework.org/schema/context   
+     http://www.springframework.org/schema/context/spring-context-3.0.xsd   
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd   
+    http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms-3.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+
+	<import resource="classpath*:applicationContext-comm.xml"/>
+	<import resource="classpath*:applicationContext-trans.xml"/>
+	
+	<bean id="dataSource1" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"></property>
+		<property name="url" value="jdbc:oracle:thin:@10.112.11.137:1521:dpibdb"></property>
+		<property name="username" value="dpib"></property>
+		<property name="password" value="dpib1234"></property>
+		<property name="maxActive" value="100"></property>
+		<property name="maxIdle" value="30"></property>
+		<property name="maxWait" value="500"></property>
+		<property name="defaultAutoCommit" value="true"></property>
+	</bean>
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource1" />
+		<property name="configLocation" value="classpath:mybatis-config.xml" />
+		<property name="mapperLocations" value="classpath*:database/*.mybatis.xml" />
+	</bean>
+	
+	<bean name="springContextUtil" class="com.spdb.ib.dpib.common.SpringContextUtil" scope="singleton" lazy-init="false"></bean>
+
+	<!-- SOP Server Example -->
+	<!-- 测试服务1 -->
+	<bean id="TESTSERVER" class="com.spdb.ib.dpib.server.imp.TCPSocketServerImp"
+		scope="singleton"  lazy-init="false" init-method="init" destroy-method="stopServer">
+		<!-- accept线程数 -->
+		<property name="bossThreadNum" value="1" />
+		<!-- worker线程数 -->
+		<property name="workerThreadNum" value="1" />
+		<!-- 服务端口 -->
+		<property name="port" value="8848" />
+		<property name="channelInitializer" ref="sOPServerInitailizer" />
+	</bean>
+	
+	 <bean id="sOPServerHandler" class="com.spdb.ib.dpib.handler.imp.SOPServerHandler"
+		scope="singleton">
+		<!-- SOP交易的工厂实现 -->
+		<property name="sOPServerTranFactory" ref="sOPServerTranFactory"></property>
+		<!-- sop数据转成javabean、InDto、OutDto等逻辑处理接口 -->
+		<property name="sOPFreemarkerService" ref="sOPFreemarkerService"></property>
+		<!-- 同步异步标识，0同步，1异步 -->
+		<property name="sync_flag" value="0"></property>
+	</bean>
+	<!-- SOP交易的工厂实现 -->
+	<bean id="sOPServerTranFactory" class="com.spdb.ib.dpib.factory.SOPServerTranFactoryImp"
+		scope="singleton">
+		<property name="sopTranMap">
+		<map>
+		<!-- 根据交易码 如3691，进入相关交易的实现类 -->
+			<entry key="3691" value="sOPBaseSingleTran3691"></entry>
+		</map>
+		</property>
+	</bean>
+	<!-- 具体交易码实现类 -->
+	<bean id="sOPBaseSingleTran3691" class="com.spdb.dpib.sop.server.test.SOPBaseSingleTran3691" scope="prototype"></bean>
+
+	
+	<!-- MQ Server Example -->
+	
+</beans>
